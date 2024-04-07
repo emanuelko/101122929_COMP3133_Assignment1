@@ -8,14 +8,10 @@ const jwt = require('jsonwebtoken')
 const { ApolloServer } = require('apollo-server-express')
 const http = require('http')
 const user = require('./models/user')
-const employeeRouter = require("./src/router/employee.router.js")
-const userRouter = require("./src/router/user.router.js")
 const app = express()
 app.use(bodyParser.json())
 app.use("*", cors())
-app.use("/api/employees", employeeRouter)
-app.use("/api/users", userRouter)
-
+const sample_users = require('./src/data.js')
 
 const server = new ApolloServer({
     typeDefs: TypeDefs.typeDefs,
@@ -33,6 +29,29 @@ server.start().then(() => {
     }).catch(err => {
         console.log('Error Mongodb connection')
     });
+    
+    app.post("/api/users/login", (req,res) => {
+        const {email,password} = req.body
+        const user = sample_users.find(user => user.email === email && user.password === password)
+
+        if(user){
+            res.send(generateTokenResponse(user))
+            res.status(200).send("login successful")
+        }else{
+            res.status(400).send("credentials not valid")
+        }
+    })
+
+    const generateTokenResponse = (user)=>{
+        const token = jwt.sign({
+            email: user.email
+        },"randomkey", {
+            expiresIn:"10d"
+        })
+        user.token = token
+        return user
+    }
+
 
     app.listen(5000, () =>{
         console.log(`server running on http://localhost:5000`) //${server.graphqlPath}
