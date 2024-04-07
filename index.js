@@ -4,11 +4,18 @@ const TypeDefs = require('./schema')
 const Resolvers = require('./resolvers')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
 const { ApolloServer } = require('apollo-server-express')
 const http = require('http')
+const user = require('./models/user')
+const employeeRouter = require("./src/router/employee.router.js")
+const userRouter = require("./src/router/user.router.js")
 const app = express()
 app.use(bodyParser.json())
 app.use("*", cors())
+app.use("/api/employees", employeeRouter)
+app.use("/api/users", userRouter)
+
 
 const server = new ApolloServer({
     typeDefs: TypeDefs.typeDefs,
@@ -27,8 +34,8 @@ server.start().then(() => {
         console.log('Error Mongodb connection')
     });
 
-    app.listen(4000, () =>{
-        console.log(`server running on http://localhost:4000${server.graphqlPath}`)
+    app.listen(5000, () =>{
+        console.log(`server running on http://localhost:5000`) //${server.graphqlPath}
     })
 })
 
